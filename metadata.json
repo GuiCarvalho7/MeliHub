@@ -1,0 +1,5 @@
+{
+  "name": "MeliMass Generator",
+  "description": "A powerful SaaS dashboard to generate and synchronize optimized Mercado Livre listings in bulk using Gemini AI.",
+  "requestFramePermissions": []
+}
