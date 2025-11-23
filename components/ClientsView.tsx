@@ -44,12 +44,16 @@ export const ClientsView: React.FC = () => {
       setConnectingClientId(client.id);
       
       try {
-          // Simulate OAuth process
+          // Initiate OAuth process via Service
           await integrateClientWithML(client.id);
-          // Refresh list to show updated status
+          
+          // In a real environment, the browser redirects away here.
+          // In the mock environment, it returns immediately, so we refresh the list
+          // to update the UI status to 'Connected' or handle the simulation.
           await loadClients();
       } catch (error) {
           console.error("Integration failed", error);
+          alert("Falha ao iniciar conexão com Mercado Livre.");
       } finally {
           setConnectingClientId(null);
       }
@@ -178,7 +182,7 @@ export const ClientsView: React.FC = () => {
                                         <button
                                             onClick={(e) => handleConnectML(e, client)}
                                             disabled={connectingClientId === client.id}
-                                            className="inline-flex items-center text-xs font-semibold text-yellow-800 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded-md border border-yellow-200 transition-colors shadow-sm"
+                                            className="inline-flex items-center text-xs font-semibold text-yellow-800 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded-md border border-yellow-200 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {connectingClientId === client.id ? (
                                                 <Loader2 size={10} className="animate-spin mr-1" />
