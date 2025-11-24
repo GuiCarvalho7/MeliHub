@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView }) =
         <div className="w-8 h-8 bg-yellow-400 rounded-md flex items-center justify-center text-slate-900 font-bold">
             <ShoppingBag size={20} />
         </div>
-        <span className="text-xl font-bold tracking-tight">MeliMass</span>
+        <span className="text-xl font-bold tracking-tight">MeliHub</span>
       </div>
 
       {/* Tenant Selector Area */}

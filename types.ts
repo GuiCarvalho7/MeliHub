@@ -38,6 +38,7 @@ export interface ListingStatus {
   status: 'draft' | 'synced' | 'error';
   lastUpdated: Date;
   tenantId: string; // Added for RLS
+  meliItemId?: string;
 }
 
 export interface Client {
@@ -63,6 +64,9 @@ export type AIProvider = 'gemini' | 'openai';
 export interface AppSettings {
   defaultProvider: AIProvider;
   openaiApiKey?: string;
+  // Mercado Livre Config
+  mlAppId?: string;
+  mlRedirectUri?: string;
 }
 
 export interface TenantContextType {
@@ -71,4 +75,22 @@ export interface TenantContextType {
   isLoading: boolean;
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+}
+
+// --- DATABASE SCHEMA INTERFACES ---
+
+export interface MeliCredential {
+  tenant_id: string;
+  access_token: string;
+  refresh_token: string;
+  user_id_meli: number;
+  token_expires_at: number; // Timestamp
+  updated_at: string;
+}
+
+export interface MeliPkceStorage {
+  tenant_id: string;
+  nonce: string; // Used as 'state'
+  code_verifier: string;
+  expires_at: number;
 }

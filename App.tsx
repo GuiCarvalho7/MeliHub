@@ -1,30 +1,60 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { InputForm } from './components/InputForm';
 import { ResultsView } from './components/ResultsView';
 import { Dashboard } from './components/Dashboard';
 import { ClientsView } from './components/ClientsView';
-import { SettingsView } from './components/SettingsView'; // Import Settings
+import { SettingsView } from './components/SettingsView'; 
 import { ProductData, GeneratedContent, AppView } from './types';
-import { Menu } from 'lucide-react';
+import { Menu, Loader2 } from 'lucide-react';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
-import { api } from './services/api'; // Import API service directly
+import { api } from './services/api'; 
 
 const MainContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { settings } = useTenant(); // Access global settings
+  
+  // Callback Processing State
+  const [isProcessingCallback, setIsProcessingCallback] = useState(false);
+
+  const { settings, currentTenant } = useTenant(); 
+
+  // Check for Mercado Livre OAuth Callback
+  useEffect(() => {
+    const handleCallback = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state'); // This is our NONCE
+        
+        if (code && state) {
+            setIsProcessingCallback(true);
+            try {
+                // Call Backend to validate Nonce (CSRF) and Exchange Code for Token
+                await api.post('/ml/auth/callback', { code, state });
+                
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert("Conexão com Mercado Livre realizada com sucesso!");
+                window.location.reload(); 
+            } catch (error: any) {
+                console.error("Auth Callback failed", error);
+                alert("Falha na autenticação: " + error.message);
+                setCurrentView(AppView.SETTINGS);
+            } finally {
+                setIsProcessingCallback(false);
+            }
+        }
+    };
+    handleCallback();
+  }, []);
 
   const handleGenerate = async (data: ProductData) => {
     setIsGenerating(true);
     try {
-      // Calls the Backend API instead of service directly
       const content = await api.post<GeneratedContent>('/listings/generate', { 
           ...data,
-          // Inject provider choice and key from Context Settings
           provider: settings.defaultProvider,
           openaiApiKey: settings.openaiApiKey 
       });
@@ -57,11 +87,21 @@ const MainContent: React.FC = () => {
       case AppView.DASHBOARD:
         return <Dashboard />;
       case AppView.SETTINGS:
-        return <SettingsView />; // Render the new Settings Component
+        return <SettingsView />;
       default:
         return <Dashboard />;
     }
   };
+
+  if (isProcessingCallback) {
+      return (
+          <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+              <h2 className="text-xl font-bold text-slate-800">Finalizando conexão segura...</h2>
+              <p className="text-slate-500">Trocando credenciais e validando tokens.</p>
+          </div>
+      )
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
@@ -69,7 +109,7 @@ const MainContent: React.FC = () => {
 
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-slate-900 text-white z-30 px-4 py-3 flex items-center justify-between shadow-md">
-         <span className="font-bold text-lg">MeliMass</span>
+         <span className="font-bold text-lg">MeliHub</span>
          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             <Menu />
          </button>
